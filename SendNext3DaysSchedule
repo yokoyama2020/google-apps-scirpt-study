@@ -1,0 +1,100 @@
+//
+//このコードはトリガーを使用し、時間指定で自動的にメールします。
+//
+
+//
+//本アカウントのメールアドレスに、３日分の予定を送信する。
+//
+function doSendMain_3day()
+{
+  //メールアドレスの取得する。
+  var user = Session.getActiveUser().getEmail();
+  Logger.log(user);
+  
+  //googleカレンダーから3日分のスケジュールを取得する。
+  var str = do3DayAction();
+  
+  //メール送信する。
+  MailApp.sendEmail(user,"通知:3日間の予定一覧",str);
+}
+
+//明日以降の3日間を返す
+function do3DayAction()
+{
+  //明日のスケジュールを取得する。
+  var str = getTomorrowSchedule(1);
+  
+  //明後日のスケジュールを取得する。
+  str+= getTomorrowSchedule(2);
+  
+  //明明後日のスケジュールを取得する。
+  str+= getTomorrowSchedule(3);
+
+  return str;
+}
+
+
+
+
+
+//明日のスケジュールの取得
+//cntDay 1 明日　2明後日　3 明々後日　と増えていく
+function getTomorrowSchedule(cntDay)
+{
+  //googleカレンダーに接続
+  var cals = CalendarApp.getDefaultCalendar();
+
+  //曜日表示
+  var w = ["日","月","火","水","木","金","土"];
+
+  //カレンダーからＮ日後のスケジュールを取得する。
+  var events = cals.getEventsForDay(getN_Day(cntDay))
+  var index = 1;
+  var str;
+  var rn = "\n";  //改行コード
+  
+  var strWeek;
+  var week = new Date(getN_Day(cntDay));
+
+  //曜日の取得
+  strWeek = w[week.getDay()]
+  
+  //メッセージの作成
+  str = rn + Utilities.formatDate(getN_Day(cntDay), "JST", "yyy/MM/dd")+" ("+strWeek+ ") 予定一覧" + rn;  
+  
+  //メッセージの作成
+  str = rn + Utilities.formatDate(getN_Day(cntDay), "JST", "yyy/MM/dd")+" ("+strWeek+ ") 予定一覧" + rn;
+
+  //取得したイベントの整形
+  for( var i in events)
+  {
+    str += index + "件目" + rn;
+    str += Utilities.formatDate(events[i].getStartTime(), "JST", "HH:mm") + "-";
+    str += Utilities.formatDate(events[i].getEndTime(), "JST", "HH:mm") + "  ";
+    str += "\"" + events[i].getTitle() +  "\"" + rn;
+    str += events[i].getDescription() + rn;
+    index = index + 1;
+  }
+  
+  //スケジュールがない場合のメッセージ
+  if(events.length == 0)
+  {
+    str = rn + Utilities.formatDate(getN_Day(cntDay), "JST", "yyy/MM/dd") +" (" + strWeek +")の予定はありません" + rn;
+  }
+  
+  Logger.log(str)
+  return str
+}
+
+
+//N日後の日付を取得する。
+function getN_Day( n)
+{
+  var startOfDay = new Date();
+  startOfDay.setUTCHours(0);
+  startOfDay.setMinutes(0);
+  startOfDay.setSeconds(0);
+  startOfDay.setMilliseconds(0);  
+  var endOfDay = new Date(startOfDay.getTime() + n * 24 * 60 * 60 * 1000);
+  return endOfDay
+}
