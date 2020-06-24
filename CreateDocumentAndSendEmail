@@ -1,0 +1,29 @@
+
+//
+// GoogleDocumentの作成とメール送信を行う。
+//
+function createAndSendDocument()
+{ 
+
+  // Google Doc  に‘Hello, world!’名前を付けて作成
+  var doc = DocumentApp.create('Hello, world!');
+  
+  
+  //ドキュメントに説明を追加する。
+  doc.getBody().appendParagraph("This document was created by Google Apps Script.");
+  
+  // ドキュメントのＵＲＬを取得する。
+　var url = doc.getUrl();
+  
+  //自分のメールアドレスを取得する。
+  var email = Session.getActiveUser().getEmail();
+  
+  // 作成したドキュメントの名前を取得する。
+  var subject = doc.getName();
+  
+  // メール本文を設定する
+  var body = 'Link to your doc: ' + url;
+  
+  // リンクしたドキュメントを自分のメールアドレスに送信する。
+  GmailApp.sendEmail(email, subject, body);
+}
